@@ -82,3 +82,4 @@ No other structural changes are required.
 ## License
 
 Free to use for educational purposes.
+Learn Math JEE with Mohit
