@@ -408,6 +408,219 @@
     renderMath();
   }
 
+  // --- Parabola Playground (interactive) -----------------------------------
+
+  var PG = { a: 1, b: -4, c: 3 };
+
+  function pgPlotSVG(a, b, c) {
+    var W = 560, H = 430;
+    var padL = 34, padR = 34, padT = 26, padB = 30;
+    var plotW = W - padL - padR, plotH = H - padT - padB;
+    function f(x) { return a * x * x + b * x + c; }
+
+    var D = b * b - 4 * a * c;
+    var roots = [];
+    if (D > 0) { var s = Math.sqrt(D); roots = [(-b - s) / (2 * a), (-b + s) / (2 * a)]; }
+    else if (D === 0) { roots = [-b / (2 * a)]; }
+    roots.sort(function (p, q) { return p - q; });
+
+    var h = -b / (2 * a), k = f(h);
+
+    var xmin, xmax;
+    if (roots.length) { xmin = Math.min(h - 4, roots[0] - 1.5); xmax = Math.max(h + 4, roots[roots.length - 1] + 1.5); }
+    else { xmin = h - 6; xmax = h + 6; }
+    if (xmin > 0) xmin = -1; if (xmax < 0) xmax = 1;
+
+    var lo = Infinity, hi = -Infinity;
+    for (var i = 0; i <= 100; i++) { var xx = xmin + (xmax - xmin) * i / 100, yy = f(xx); if (yy < lo) lo = yy; if (yy > hi) hi = yy; }
+    lo = Math.min(lo, 0); hi = Math.max(hi, 0);
+    var padY = (hi - lo) * 0.16 || 1;
+    var ymin = lo - padY, ymax = hi + padY;
+
+    function sx(x) { return padL + (x - xmin) / (xmax - xmin) * plotW; }
+    function sy(y) { return padT + (ymax - y) / (ymax - ymin) * plotH; }
+
+    var id = "pg" + (++_graphSeq);
+    var p = [];
+    p.push('<defs><clipPath id="clip-' + id + '"><rect x="' + padL + '" y="' + padT + '" width="' + plotW + '" height="' + plotH + '"/></clipPath></defs>');
+
+    // Dashed grid.
+    var xstep = Math.max(1, Math.round((xmax - xmin) / 12));
+    var ystep = Math.max(1, Math.round((ymax - ymin) / 8));
+    var gx, gy;
+    for (gx = Math.ceil(xmin / xstep) * xstep; gx <= xmax; gx += xstep) {
+      var px = round2(sx(gx));
+      p.push('<line x1="' + px + '" y1="' + padT + '" x2="' + px + '" y2="' + (padT + plotH) + '" stroke="#e8ecf3" stroke-dasharray="3 4"/>');
+    }
+    for (gy = Math.ceil(ymin / ystep) * ystep; gy <= ymax; gy += ystep) {
+      var py = round2(sy(gy));
+      p.push('<line x1="' + padL + '" y1="' + py + '" x2="' + (padL + plotW) + '" y2="' + py + '" stroke="#e8ecf3" stroke-dasharray="3 4"/>');
+      if (gy !== 0) p.push('<text x="' + (sx(0) + 6) + '" y="' + (py - 3) + '" class="pg-tick">' + gy + "</text>");
+    }
+
+    // Axes.
+    var y0 = round2(sy(0)), x0 = round2(sx(0));
+    if (ymin < 0 && ymax > 0) p.push('<line x1="' + padL + '" y1="' + y0 + '" x2="' + (padL + plotW) + '" y2="' + y0 + '" stroke="#8a94a6" stroke-width="1.4"/>');
+    if (xmin < 0 && xmax > 0) p.push('<line x1="' + x0 + '" y1="' + padT + '" x2="' + x0 + '" y2="' + (padT + plotH) + '" stroke="#8a94a6" stroke-width="1.4"/>');
+    p.push('<text x="' + (x0 + 6) + '" y="' + (padT + 12) + '" class="pg-axis">y-axis</text>');
+    p.push('<text x="' + (padL + plotW - 6) + '" y="' + (y0 - 6) + '" class="pg-axis" text-anchor="end">x-axis</text>');
+
+    // Curve.
+    var d = "";
+    for (var t = 0; t <= 180; t++) { var x = xmin + (xmax - xmin) * t / 180; d += (t === 0 ? "M" : "L") + round2(sx(x)) + " " + round2(sy(f(x))) + " "; }
+    p.push('<path d="' + d + '" fill="none" stroke="#14233f" stroke-width="3" clip-path="url(#clip-' + id + ')"/>');
+
+    // Roots.
+    roots.forEach(function (r, idx) {
+      if (r < xmin || r > xmax) return;
+      p.push('<circle cx="' + round2(sx(r)) + '" cy="' + y0 + '" r="5.5" fill="#f5a623" stroke="#fff" stroke-width="1.5"/>');
+      p.push('<text x="' + round2(sx(r)) + '" y="' + (y0 + 18) + '" class="pg-root">Root ' + (idx + 1) + ": " + round2(r).toFixed(2) + "</text>");
+    });
+
+    // Vertex.
+    if (h >= xmin && h <= xmax) {
+      p.push('<circle cx="' + round2(sx(h)) + '" cy="' + round2(sy(k)) + '" r="5.5" fill="#9aa4b8" stroke="#fff" stroke-width="1.5"/>');
+      var vy = a > 0 ? round2(sy(k) - 10) : round2(sy(k) + 18);
+      p.push('<text x="' + round2(sx(h)) + '" y="' + vy + '" class="pg-vertex">Vertex (' + round2(h).toFixed(1) + ", " + round2(k).toFixed(1) + ")</text>");
+    }
+
+    return { svg: '<svg viewBox="0 0 ' + W + " " + H + '" class="pg-svg" role="img" aria-label="Interactive parabola graph">' + p.join("") + "</svg>", D: D, roots: roots, h: h, k: k };
+  }
+
+  function pgEqHTML(a, b, c) {
+    var out;
+    if (a === 1) out = '<span class="eq-var">x<sup>2</sup></span>';
+    else if (a === -1) out = '<span class="eq-op">−</span><span class="eq-var">x<sup>2</sup></span>';
+    else out = '<span class="eq-num">' + a + '</span><span class="eq-var">x<sup>2</sup></span>';
+    if (b !== 0) {
+      out += ' <span class="eq-op">' + (b < 0 ? "−" : "+") + "</span> ";
+      var ab = Math.abs(b);
+      out += (ab === 1 ? "" : '<span class="eq-num">' + ab + "</span>") + '<span class="eq-var">x</span>';
+    }
+    if (c !== 0) out += ' <span class="eq-op">' + (c < 0 ? "−" : "+") + '</span> <span class="eq-num">' + Math.abs(c) + "</span>";
+    out += ' <span class="eq-eq">=</span> <span class="eq-zero">0</span>';
+    return out;
+  }
+
+  function pgUpdate() {
+    var a = parseInt(document.getElementById("pg-a").value, 10);
+    var b = parseInt(document.getElementById("pg-b").value, 10);
+    var c = parseInt(document.getElementById("pg-c").value, 10);
+    if (a === 0) { a = 1; document.getElementById("pg-a").value = "1"; } // 'a' can never be 0
+    PG = { a: a, b: b, c: c };
+
+    document.getElementById("pg-a-val").textContent = (a > 0 ? "+" : "") + a + (a > 0 ? " (Smile 😀)" : " (Frown 🙁)");
+    document.getElementById("pg-b-val").textContent = (b > 0 ? "+" : "") + b;
+    document.getElementById("pg-c-val").textContent = (c > 0 ? "+" : "") + c;
+
+    document.getElementById("pg-eq").innerHTML = pgEqHTML(a, b, c);
+    document.getElementById("pg-chip-a").textContent = "a = " + a;
+    document.getElementById("pg-chip-b").textContent = "b = " + b;
+    document.getElementById("pg-chip-c").textContent = "c = " + c;
+
+    var res = pgPlotSVG(a, b, c);
+    document.getElementById("pg-graph").innerHTML = res.svg;
+
+    var badge = document.getElementById("pg-badge");
+    badge.textContent = a > 0 ? "😀 SMILE (A > 0)" : "🙁 FROWN (A < 0)";
+    badge.className = "pg-face " + (a > 0 ? "smile" : "frown");
+
+    document.getElementById("pg-d").textContent = "D = " + res.D;
+    var count, insight;
+    if (res.D > 0) {
+      count = "2 Distinct Keys 🔑🔑";
+      insight = "Since D > 0, the curve slices through the ground at two separate points! These are your real, distinct roots: x₁ = " +
+        res.roots[0].toFixed(2) + " and x₂ = " + res.roots[1].toFixed(2) + ".";
+    } else if (res.D === 0) {
+      count = "1 Repeated Key 🔑";
+      insight = "Since D = 0, the curve just kisses the x-axis at a single point. The repeated root is x = " + res.h.toFixed(2) + ".";
+    } else {
+      count = "0 Real Keys";
+      insight = "Since D < 0, the curve floats entirely " + (a > 0 ? "above" : "below") +
+        " the x-axis and never touches it — so there are no real roots.";
+    }
+    document.getElementById("pg-count").textContent = count;
+    document.getElementById("pg-insight").innerHTML = "<strong>Teacher's Insight:</strong> " + esc(insight);
+  }
+
+  function viewPlayground() {
+    app.innerHTML =
+      welcomeBanner() +
+      tabBar("playground") +
+      '<article class="panel playground">' +
+        '<div class="pg-head">' +
+          "<div>" +
+            '<span class="topic-badge">INTERACTIVE GRAPHICS PLAYGROUND 🎨</span>' +
+            '<h2 class="topic-title">Parabola Playground</h2>' +
+            '<p class="topic-intro">Mohit, move the sliders below to shape your quadratic bowl! Watch the equation change, ' +
+              "see it smile or frown, and find where the keys (roots) appear.</p>" +
+          "</div>" +
+          '<button class="reset-btn" id="pg-reset">🔄 RESET GRAPH</button>' +
+        "</div>" +
+
+        '<div class="pg-grid">' +
+          '<div class="pg-controls">' +
+            '<div class="pg-eq-card">' +
+              '<div class="pg-eq-label">YOUR LIVE MACHINE EQUATION:</div>' +
+              '<div class="pg-eq" id="pg-eq"></div>' +
+              '<div class="pg-chips"><span class="pg-chip" id="pg-chip-a"></span>' +
+                '<span class="pg-chip" id="pg-chip-b"></span><span class="pg-chip" id="pg-chip-c"></span></div>' +
+            "</div>" +
+
+            pgSlider("a", "WIDTH & DIRECTION", "A", -5, 5, PG.a, "Positive a makes the bowl smile. Negative a makes it frown!") +
+            pgSlider("b", "LEFT & RIGHT SHIFT", "B", -10, 10, PG.b, "Moves the bowl's bottom left or right — it controls the symmetric center point!") +
+            pgSlider("c", "Y-INTERCEPT HEIGHT", "C", -10, 10, PG.c, "Raises or lowers the whole bowl. It's where the parabola crosses the vertical line!") +
+
+            '<div class="pg-report">' +
+              '<div class="pg-report-title">✨ D-DETECTOR REPORT:</div>' +
+              '<div class="pg-report-grid">' +
+                '<div class="pg-stat"><div class="pg-stat-label">DISCRIMINANT</div><div class="pg-stat-val" id="pg-d"></div></div>' +
+                '<div class="pg-stat"><div class="pg-stat-label">KEY ROOTS COUNT</div><div class="pg-stat-val small" id="pg-count"></div></div>' +
+              "</div>" +
+              '<div class="pg-insight" id="pg-insight"></div>' +
+            "</div>" +
+          "</div>" +
+
+          '<div class="pg-graph-col">' +
+            '<div class="pg-graph-card">' +
+              '<div class="pg-face smile" id="pg-badge"></div>' +
+              '<div id="pg-graph"></div>' +
+            "</div>" +
+            '<div class="pg-legend">' +
+              '<span><i class="dot curve"></i> Parabola Curve</span>' +
+              '<span><i class="dot root"></i> Roots (x-intercepts)</span>' +
+              '<span><i class="dot vertex"></i> Vertex (Turning Point)</span>' +
+            "</div>" +
+          "</div>" +
+        "</div>" +
+      "</article>";
+
+    ["a", "b", "c"].forEach(function (key) {
+      document.getElementById("pg-" + key).addEventListener("input", pgUpdate);
+    });
+    document.getElementById("pg-reset").addEventListener("click", function () {
+      document.getElementById("pg-a").value = "1";
+      document.getElementById("pg-b").value = "-4";
+      document.getElementById("pg-c").value = "3";
+      pgUpdate();
+    });
+
+    pgUpdate();
+  }
+
+  function pgSlider(key, label, letter, min, max, value, help) {
+    return (
+      '<div class="pg-slider">' +
+        '<div class="pg-slider-head">' +
+          '<span class="pg-slider-label"><span class="dot"></span> ' + label + ' ( <b>' + letter + "</b> )</span>" +
+          '<span class="pg-slider-val" id="pg-' + key + '-val"></span>' +
+        "</div>" +
+        '<input type="range" id="pg-' + key + '" min="' + min + '" max="' + max + '" step="1" value="' + value + '">' +
+        '<div class="pg-slider-help">' + esc(help) + "</div>" +
+      "</div>"
+    );
+  }
+
   function viewPlaceholder(tab, icon, title, text) {
     app.innerHTML =
       welcomeBanner() +
@@ -452,10 +665,7 @@
     } else if (view === "quiz") {
       viewQuiz();
     } else if (view === "playground") {
-      viewPlaceholder(
-        "playground", "📈", "Parabola Playground",
-        "An interactive graphing space is coming soon. For now, sketch each parabola using the vertex x = −b/2a and the discriminant to see whether it cuts, touches or misses the x-axis."
-      );
+      viewPlayground();
     } else if (view === "chat") {
       viewPlaceholder(
         "chat", "💬", "AI Teacher Chat",
