@@ -14,8 +14,8 @@ window.LWM_DATA = {
   },
 
   chapters: [
-    { id: "quadratic", num: "01", label: "QUADRATIC EQUATIONS", active: true },
-    { id: "progressions", num: "02", label: "PROGRESSIONS (AP, GP, HP)", active: false }
+    { id: "quadratic", num: "01", label: "QUADRATIC EQUATIONS", active: true, playground: "parabola" },
+    { id: "progressions", num: "02", label: "PROGRESSIONS (AP, GP, HP)", active: true, playground: "progression" }
   ],
 
   welcome: {
@@ -656,5 +656,638 @@ window.LWM_DATA = {
       question: "Solve \\(\\dfrac{x - 2}{x + 3} \\leq 0\\).",
       answer: "Critical points −3 and 2; exclude −3, include 2 \\(\\Rightarrow (-3, 2]\\)."
     }
-  ]
+  ],
+
+  // ======================================================================
+  //  CHAPTER 02 — PROGRESSIONS (AP, GP, HP)
+  // ======================================================================
+  progressions: {
+    welcome: {
+      heading: "MASTER PROGRESSIONS!",
+      text:
+        "Hey Mohit, progressions are the mathematics of PATTERNS — and patterns are " +
+        "everywhere! An A.P. grows by steady ADDING (like a staircase), a G.P. grows by " +
+        "explosive MULTIPLYING (like money doubling in a bank), and an H.P. is just an A.P. " +
+        "flipped upside down. Learn to spot the pattern and you can predict the future of any sequence!",
+      tutorAdvice:
+        "Mohit, the FIRST question to ask in any problem is: 'Is this ADDING (A.P.) or " +
+        "MULTIPLYING (G.P.)?' If the terms grow by the same AMOUNT it's an A.P.; if they grow " +
+        "by the same FACTOR it's a G.P. That one habit unlocks almost every question!"
+    },
+
+    tabs: [
+      { id: "notes", label: "Student Notes", icon: "📖" },
+      { id: "playground", label: "Progression Playground", icon: "📊" },
+      { id: "chat", label: "AI Teacher Chat", icon: "💬" },
+      { id: "quiz", label: "Practice Quiz Arena", icon: "🏆" },
+      { id: "revision", label: "Quick Revision Sheet", icon: "📋" }
+    ],
+
+    topics: [
+      {
+        id: "basics",
+        num: "01",
+        title: "Sequence, Series & Progression",
+        subtitle: "The building blocks: what is a sequence, a series, and a progression?",
+        intro:
+          "A sequence is a list of numbers written in a fixed order. A series is what you get when " +
+          "you add up the terms of a sequence. A progression is a special sequence where every term " +
+          "is connected to the previous one by the exact same rule.",
+        intuition:
+          "Think of a 'term' as one number in the list — in 2, 5, 8, 11 the number 8 is the 3rd term. " +
+          "The 'nth term' is a vending machine: punch in a number n and it spits out that exact term, " +
+          "so you never have to count on your fingers again!",
+        sections: [
+          {
+            num: "1.1",
+            title: "Sequence vs. Series",
+            coreDefinition:
+              "A sequence is an ordered list, e.g. \\(1, 3, 5, 7, \\ldots\\). A series is the sum of a " +
+              "sequence, e.g. \\(1 + 3 + 5 + 7 = 16\\). A series can be finite (stops) or infinite (never ends).",
+            whyThisWorks:
+              "Memory trick: SEQUENCE has a 'Q' like a 'Queue' (a list waiting in line). SERIES hides a " +
+              "plus sign — think 'S for Sum'.",
+            teacherTip:
+              "Read the question carefully: 'find the 10th term' needs a sequence; 'find the sum of 10 terms' needs a series.",
+            commonMistake:
+              "Confusing a term's value with its position. In \\(2, 5, 8, 11\\), '8' is the value of the 3rd term.",
+            examples: []
+          },
+          {
+            num: "1.2",
+            title: "The Three Progressions",
+            coreDefinition:
+              "A.P. — keep ADDING the same number. G.P. — keep MULTIPLYING by the same number. " +
+              "H.P. — flip every term (reciprocal) and it becomes an A.P.",
+            whyThisWorks:
+              "A.P. = steady growth (staircases, simple interest). G.P. = explosive growth (bacteria, " +
+              "compound interest). H.P. = rates and ratios (average speed, music harmonics).",
+            teacherTip:
+              "In short: A.P. adds, G.P. multiplies, H.P. flips. Identify the type first, then pick the formula.",
+            commonMistake:
+              "Trying to solve an H.P. directly. Always flip it into an A.P. first, solve, then flip your answer back.",
+            examples: [
+              {
+                question: "Classify: (A) \\(3, 7, 11, 15\\), (B) \\(2, 6, 18, 54\\), (C) \\(\\tfrac12, \\tfrac14, \\tfrac16\\).",
+                steps: [
+                  "(A) Jumps are \\(+4, +4, +4\\) — same amount added, so it is an A.P.",
+                  "(B) Ratios are \\(3, 3, 3\\) — same factor multiplied, so it is a G.P.",
+                  "(C) Flip to get \\(2, 4, 6\\) which is an A.P., so the original is an H.P."
+                ]
+              }
+            ]
+          }
+        ]
+      },
+
+      {
+        id: "ap-basics",
+        num: "02",
+        title: "Arithmetic Progression — nth Term",
+        subtitle: "The staircase! Every step is the same height (the common difference d).",
+        intro:
+          "In an A.P. every term is the same 'height' d above the one before it. The general form is " +
+          "\\(a,\\; a+d,\\; a+2d,\\; a+3d,\\ldots\\) and the most important formula is the nth term.",
+        intuition:
+          "Imagine a staircase where every step is exactly the same height. That fixed jump is d, the " +
+          "common difference. Term 1 has 0 copies of d, term 2 has 1 copy, term 3 has 2 copies — the " +
+          "number of d's is always ONE LESS than the term number. That single idea IS the nth-term formula.",
+        sections: [
+          {
+            num: "2.1",
+            title: "The nth Term Formula",
+            coreDefinition:
+              "\\(a_n = a + (n-1)d\\), where \\(a\\) is the first term and \\(d = a_2 - a_1\\) is the common difference.",
+            whyThisWorks:
+              "The 1st term has \\((1-1)=0\\) copies of d, the 2nd has \\((2-1)=1\\) copy, and so on. So the nth " +
+              "term has \\((n-1)\\) copies of d added to \\(a\\) — exactly \\(a + (n-1)d\\).",
+            teacherTip:
+              "Bonus: find d from ANY two terms with \\(d = \\dfrac{a_m - a_n}{m - n}\\) — no need to list every term in between.",
+            commonMistake:
+              "Writing \\(a + nd\\) instead of \\(a + (n-1)d\\). Remember: the number of d's is one LESS than the term number.",
+            examples: [
+              {
+                question: "Find the 10th term of \\(5, 9, 13, 17, \\ldots\\)",
+                steps: [
+                  "Identify \\(a = 5\\) and \\(d = 9 - 5 = 4\\).",
+                  "Use \\(a_{10} = a + (n-1)d = 5 + (10-1)(4)\\).",
+                  "Brackets first: \\(10 - 1 = 9\\); then \\(9 \\times 4 = 36\\).",
+                  "Add: \\(5 + 36 = 41\\). So \\(a_{10} = 41\\)."
+                ]
+              },
+              {
+                question: "If the 5th term is 17 and the 12th term is 45, find d.",
+                steps: [
+                  "Use \\(d = \\dfrac{a_{12} - a_5}{12 - 5} = \\dfrac{45 - 17}{7}\\).",
+                  "\\(= \\dfrac{28}{7} = 4\\). Much faster than writing all 12 terms!"
+                ]
+              }
+            ]
+          },
+          {
+            num: "2.2",
+            title: "kth Term From the End",
+            coreDefinition:
+              "The \\(k\\)th term from the end \\(= a + (n-k)d\\). If the last term \\(l\\) is known, use the shortcut " +
+              "\\(a_{(k\\text{ from end})} = l - (k-1)d\\).",
+            whyThisWorks:
+              "Counting backward from the end is symmetric to counting forward from the start — you just subtract d " +
+              "instead of adding it, starting from the last term l.",
+            teacherTip:
+              "The shortcut \\(l - (k-1)d\\) means you never even need to compute n. One line instead of three!",
+            commonMistake:
+              "Using \\(l - kd\\). The 1st term from the end IS l itself, so use \\((k-1)\\), not k.",
+            examples: [
+              {
+                question: "Find the 10th term from the end of \\(5, 7, 9, \\ldots, 35\\).",
+                steps: [
+                  "Here \\(l = 35\\) and \\(d = 7 - 5 = 2\\).",
+                  "Shortcut: \\(a = l - (k-1)d = 35 - (10-1)(2)\\).",
+                  "\\(= 35 - 18 = 17\\). Answer: 17."
+                ]
+              }
+            ]
+          }
+        ]
+      },
+
+      {
+        id: "ap-sum",
+        num: "03",
+        title: "AP — Sum of n Terms",
+        subtitle: "The famous Gauss trick! Add the list to its own reverse and halve.",
+        intro:
+          "The sum of the first n terms of an A.P. is \\(S_n = \\dfrac{n}{2}[2a + (n-1)d]\\), or equivalently " +
+          "\\(S_n = \\dfrac{n}{2}(a + l)\\) when the last term l is known.",
+        intuition:
+          "Write the sum forwards, then write it backwards underneath, and add matching positions. Every pair " +
+          "adds up to (first + last), and there are n such pairs — so twice the sum is \\(n(a+l)\\). This is the " +
+          "trick young Carl Gauss used to add 1 to 100 in seconds (answer: 5050)!",
+        sections: [
+          {
+            num: "3.1",
+            title: "The Sum Formula",
+            coreDefinition:
+              "\\(S_n = \\dfrac{n}{2}[2a + (n-1)d] = \\dfrac{n}{2}(a + l)\\). In words: Sum = (average of first and last term) × (number of terms).",
+            whyThisWorks:
+              "Pairing forwards + backwards gives \\(2S_n = n(a+l)\\), so \\(S_n = \\tfrac{n}{2}(a+l)\\). Substituting " +
+              "\\(l = a + (n-1)d\\) gives the other version.",
+            teacherTip:
+              "Handy shortcuts: sum of first n ODD numbers \\(= n^2\\); sum of first n EVEN numbers \\(= n(n+1)\\).",
+            commonMistake:
+              "Forgetting the factor \\(\\tfrac{n}{2}\\), or using the wrong number of terms n.",
+            examples: [
+              {
+                question: "Find \\(S_{50}\\) for the A.P. \\(2, 5, 8, \\ldots\\)",
+                steps: [
+                  "Here \\(a = 2,\\; d = 3,\\; n = 50\\).",
+                  "\\(S_{50} = \\dfrac{50}{2}[2(2) + (50-1)(3)] = 25[4 + 147]\\).",
+                  "\\(= 25 \\times 151 = 3775\\)."
+                ]
+              }
+            ]
+          },
+          {
+            num: "3.2",
+            title: "Selecting Terms — The Centering Trick",
+            coreDefinition:
+              "For 3 terms use \\(a-d,\\; a,\\; a+d\\); for 4 terms use \\(a-3d,\\; a-d,\\; a+d,\\; a+3d\\); " +
+              "for 5 terms use \\(a-2d,\\; a-d,\\; a,\\; a+d,\\; a+2d\\).",
+            whyThisWorks:
+              "Centering around a middle value makes the d's cancel when you add. For 3 terms, " +
+              "\\((a-d) + a + (a+d) = 3a\\), so the sum instantly gives you a without even knowing d.",
+            teacherTip:
+              "Whenever a problem gives you the SUM or PRODUCT of terms in A.P., reach for the centering trick first.",
+            commonMistake:
+              "Using \\(a, a+d, a+2d\\) for symmetric problems — it works but creates messy algebra you can avoid.",
+            examples: [
+              {
+                question: "Three numbers in A.P. have sum 15. Find the middle number.",
+                steps: [
+                  "Use centred terms \\(a-d,\\; a,\\; a+d\\).",
+                  "Sum \\(= (a-d) + a + (a+d) = 3a = 15\\).",
+                  "So \\(a = 5\\) — the middle number is 5, found instantly."
+                ]
+              }
+            ]
+          }
+        ]
+      },
+
+      {
+        id: "ap-props",
+        num: "04",
+        title: "AP — Properties & Golden Results",
+        subtitle: "Powerful shortcuts that turn 5-minute problems into 10-second answers.",
+        intro:
+          "A.P.s have elegant properties and 'golden results' that let you answer many questions without " +
+          "solving the whole system of equations.",
+        intuition:
+          "Shifting a staircase up or down doesn't change the step height (add k → same d). Stretching it makes " +
+          "bigger but equal steps (multiply by k → new d = kd). Terms equally far from both ends always add to " +
+          "the same value — like a seesaw balanced at the middle.",
+        sections: [
+          {
+            num: "4.1",
+            title: "Key Properties",
+            coreDefinition:
+              "If \\(a_n = An + B\\) (linear in n) it is an A.P. with \\(d = A\\). If \\(S_n = an^2 + bn\\) it is an A.P. with " +
+              "\\(d = 2a\\). Also \\(t_n = S_n - S_{n-1}\\), and \\(a_1 + a_n = a_2 + a_{n-1} = \\ldots\\)",
+            whyThisWorks:
+              "The nth term = (total up to n) − (total up to n−1). If you know the running total after 5 people and " +
+              "after 4 people paid, the difference is exactly what the 5th person paid.",
+            teacherTip:
+              "Three numbers a, b, c are in A.P. exactly when \\(2b = a + c\\) — the fast 'middle × 2 = first + last' test.",
+            commonMistake:
+              "Assuming the term-by-term PRODUCT of two A.P.s is an A.P. It usually is NOT — a common exam trap.",
+            examples: [
+              {
+                question: "Are \\(4, 9, 14\\) in A.P.? Use the quick test.",
+                steps: [
+                  "Check \\(2 \\times (\\text{middle}) = \\text{first} + \\text{last}\\).",
+                  "\\(2 \\times 9 = 18\\) and \\(4 + 14 = 18\\). Equal, so yes — they are in A.P."
+                ]
+              }
+            ]
+          },
+          {
+            num: "4.2",
+            title: "The Golden Results",
+            coreDefinition:
+              "If \\(T_p = q\\) and \\(T_q = p\\), then \\(T_{p+q} = 0\\). If \\(S_p = S_q\\) (\\(p \\neq q\\)), then \\(S_{p+q} = 0\\). " +
+              "If \\(S_p = q\\) and \\(S_q = p\\), then \\(S_{p+q} = -(p+q)\\).",
+            whyThisWorks:
+              "If adding the extra terms from p up to q changes the total by nothing, those terms must sum to zero — " +
+              "which happens when the A.P. crosses from negative to positive in the middle.",
+            teacherTip:
+              "Spotting 'this is the \\(T_p = q,\\; T_q = p\\) pattern' turns a long algebra problem into an instant answer.",
+            commonMistake:
+              "Mixing up the term results (T) with the sum results (S). Check whether the problem talks about a term or a sum.",
+            examples: [
+              {
+                question: "The 4th term of an A.P. is 7 and the 7th term is 4. Find \\(T_{11}\\).",
+                steps: [
+                  "This matches \\(T_p = q,\\; T_q = p\\) with \\(p = 4,\\; q = 7\\).",
+                  "So \\(T_{p+q} = T_{4+7} = T_{11} = 0\\), with no calculation needed."
+                ]
+              }
+            ]
+          }
+        ]
+      },
+
+      {
+        id: "gp-basics",
+        num: "05",
+        title: "Geometric Progression — nth Term",
+        subtitle: "Money doubling in a bank! Every term is a fixed multiple (the ratio r).",
+        intro:
+          "In a G.P. every term is a fixed multiple of the one before it — that multiplier is r, the common ratio. " +
+          "The general form is \\(a,\\; ar,\\; ar^2,\\; ar^3,\\ldots\\) and \\(a_n = ar^{\\,n-1}\\).",
+        intuition:
+          "Imagine ₹2 that doubles every day: 2, 4, 8, 16, 32… Biggest confusion point: A.P. → SUBTRACT to find d, " +
+          "G.P. → DIVIDE to find r. Don't mix them up! The power of r is always (term number − 1).",
+        sections: [
+          {
+            num: "5.1",
+            title: "The nth Term of a G.P.",
+            coreDefinition:
+              "\\(a_n = ar^{\\,n-1}\\), where \\(a\\) is the first term and \\(r = \\dfrac{a_2}{a_1}\\) is the common ratio.",
+            whyThisWorks:
+              "Same logic as an A.P. but multiplying instead of adding: term 1 has \\(r^0 = 1\\), term 2 has \\(r^1\\), " +
+              "term 3 has \\(r^2\\)… so the nth term carries \\(r^{\\,n-1}\\).",
+            teacherTip:
+              "kth term from the end (last term l known): \\(a_{(k\\text{ from end})} = \\dfrac{l}{r^{\\,k-1}}\\) — divide instead of subtract.",
+            commonMistake:
+              "Writing \\(ar^n\\) instead of \\(ar^{\\,n-1}\\). The power is one LESS than the term number.",
+            examples: [
+              {
+                question: "Find the 6th term of \\(3, 6, 12, 24, \\ldots\\)",
+                steps: [
+                  "Here \\(a = 3\\) and \\(r = 6/3 = 2\\).",
+                  "\\(a_6 = ar^{6-1} = 3 \\times 2^5\\).",
+                  "\\(2^5 = 32\\), so \\(a_6 = 3 \\times 32 = 96\\)."
+                ]
+              },
+              {
+                question: "Are \\(3, 6, 12\\) in G.P.? Use the quick test.",
+                steps: [
+                  "Check \\((\\text{middle})^2 = \\text{first} \\times \\text{last}\\).",
+                  "\\(6^2 = 36\\) and \\(3 \\times 12 = 36\\). Equal, so yes — they are in G.P."
+                ]
+              }
+            ]
+          }
+        ]
+      },
+
+      {
+        id: "gp-sum",
+        num: "06",
+        title: "GP — Sum of n Terms & Infinite Sum",
+        subtitle: "The chessboard-and-rice legend, and the pizza that never fills you up.",
+        intro:
+          "The sum of n terms of a G.P. is \\(S_n = \\dfrac{a(r^n - 1)}{r - 1}\\) (for \\(r \\neq 1\\)). When " +
+          "\\(-1 < r < 1\\), an infinite G.P. converges to \\(S_\\infty = \\dfrac{a}{1-r}\\).",
+        intuition:
+          "Multiply the whole sum by r and subtract the original — almost everything cancels, leaving a tidy formula. " +
+          "For the infinite case: eating half a pizza, then half of what's left, forever, gets you closer and closer " +
+          "to exactly 1 whole pizza but never over.",
+        sections: [
+          {
+            num: "6.1",
+            title: "Sum of n Terms",
+            coreDefinition:
+              "\\(S_n = \\dfrac{a(r^n - 1)}{r - 1}\\) when \\(r > 1\\), and \\(S_n = \\dfrac{a(1 - r^n)}{1 - r}\\) when \\(r < 1\\).",
+            whyThisWorks:
+              "Write \\(S_n\\) and \\(rS_n\\) (shifted one step), then subtract: \\(rS_n - S_n = ar^n - a\\), giving " +
+              "\\(S_n(r-1) = a(r^n - 1)\\).",
+            teacherTip:
+              "The chessboard legend is exactly this: \\(a = 1, r = 2, n = 64\\) gives \\(S_{64} = 2^{64} - 1\\) — a 20-digit number of rice grains!",
+            commonMistake:
+              "Using the \\(r > 1\\) form when \\(r < 1\\) and getting a negative-looking answer. Pick the matching version.",
+            examples: [
+              {
+                question: "Find the sum of the first 6 terms of \\(2, 6, 18, \\ldots\\)",
+                steps: [
+                  "Here \\(a = 2,\\; r = 3,\\; n = 6\\).",
+                  "\\(S_6 = \\dfrac{2(3^6 - 1)}{3 - 1} = \\dfrac{2(729 - 1)}{2}\\).",
+                  "\\(= \\dfrac{2 \\times 728}{2} = 728\\)."
+                ]
+              }
+            ]
+          },
+          {
+            num: "6.2",
+            title: "Sum of an Infinite G.P.",
+            coreDefinition:
+              "\\(S_\\infty = \\dfrac{a}{1 - r}\\), valid only when \\(-1 < r < 1\\) (a shrinking ratio).",
+            whyThisWorks:
+              "When \\(|r| < 1\\), the term \\(r^n\\) shrinks toward 0 as n grows, so \\(S_n = \\dfrac{a(1-r^n)}{1-r}\\) " +
+              "approaches \\(\\dfrac{a}{1-r}\\).",
+            teacherTip:
+              "If \\(r \\geq 1\\) the terms keep growing forever, so there is NO finite infinite-sum.",
+            commonMistake:
+              "Applying the infinite-sum formula when \\(|r| \\geq 1\\), where the series actually diverges.",
+            examples: [
+              {
+                question: "Find \\(S_\\infty\\) for \\(1 + \\tfrac13 + \\tfrac19 + \\ldots\\)",
+                steps: [
+                  "Here \\(a = 1\\) and \\(r = \\tfrac13\\) (and \\(|r| < 1\\)).",
+                  "\\(S_\\infty = \\dfrac{a}{1-r} = \\dfrac{1}{1 - \\tfrac13} = \\dfrac{1}{\\tfrac23} = \\dfrac32\\)."
+                ]
+              }
+            ]
+          }
+        ]
+      },
+
+      {
+        id: "agp",
+        num: "07",
+        title: "Arithmetic-Geometric Progression",
+        subtitle: "A hybrid: an A.P. and a G.P. multiplied together, term by term.",
+        intro:
+          "An A.G.P. is built by multiplying an A.P. part \\((a, a+d, a+2d, \\ldots)\\) with a G.P. part " +
+          "\\((1, r, r^2, \\ldots)\\) term by term, giving \\(a,\\; (a+d)r,\\; (a+2d)r^2,\\ldots\\)",
+        intuition:
+          "Whenever you see a series that looks like 'A.P. part × G.P. part' — for example " +
+          "\\(1, 2x, 3x^2, 4x^3, \\ldots\\) — it is an A.G.P. It is solved with the SAME 'multiply by r and " +
+          "subtract' trick you used for a plain G.P.",
+        sections: [
+          {
+            num: "7.1",
+            title: "Sum to Infinity of an A.G.P.",
+            coreDefinition:
+              "For \\(|r| < 1\\) (with the G.P. part starting at \\(r^0 = 1\\)): " +
+              "\\(S_\\infty = \\dfrac{a}{1-r} + \\dfrac{dr}{(1-r)^2}\\).",
+            whyThisWorks:
+              "Multiplying by r and subtracting collapses the A.P. parts down to a plain 'leftover' G.P., which is " +
+              "then summed with the ordinary G.P. formula — that is where the two-piece formula comes from.",
+            teacherTip:
+              "First split the series into its A.P. part (to read off a and d) and its G.P. part (to read off r).",
+            commonMistake:
+              "Using this infinite-sum formula when the G.P. part does not start at 1, where it is not valid.",
+            examples: [
+              {
+                question: "Find the sum to infinity of \\(1 + \\tfrac{2}{2} + \\tfrac{3}{4} + \\tfrac{4}{8} + \\ldots\\)",
+                steps: [
+                  "A.P. part is \\(1, 2, 3, 4, \\ldots\\) so \\(a = 1, d = 1\\); G.P. part is \\(1, \\tfrac12, \\tfrac14, \\ldots\\) so \\(r = \\tfrac12\\).",
+                  "\\(S_\\infty = \\dfrac{a}{1-r} + \\dfrac{dr}{(1-r)^2} = \\dfrac{1}{\\tfrac12} + \\dfrac{1 \\cdot \\tfrac12}{(\\tfrac12)^2}\\).",
+                  "\\(= 2 + \\dfrac{\\tfrac12}{\\tfrac14} = 2 + 2 = 4\\)."
+                ]
+              }
+            ]
+          }
+        ]
+      },
+
+      {
+        id: "hp",
+        num: "08",
+        title: "Harmonic Progression",
+        subtitle: "Flip it! A sequence whose reciprocals form an A.P.",
+        intro:
+          "A sequence is an H.P. if, when you take the reciprocal of every term, you get an A.P. The nth term is " +
+          "\\(a_n = \\dfrac{1}{a + (n-1)d}\\), where a and d belong to the flipped A.P.",
+        intuition:
+          "Never work with an H.P. directly. Flip it into an A.P., solve the problem the easy way, then flip your " +
+          "final answer back. H.P. shows up in music (harmonics), the lens formula, and 'equal distance, different " +
+          "speed' problems.",
+        sections: [
+          {
+            num: "8.1",
+            title: "Solving via the Flip Rule",
+            coreDefinition:
+              "\\(a_n = \\dfrac{1}{a + (n-1)d}\\). To solve: take reciprocals to get an A.P., find the required A.P. term, " +
+              "then take the reciprocal once more.",
+            whyThisWorks:
+              "By definition the reciprocals of an H.P. form an A.P., so every H.P. question becomes an ordinary A.P. " +
+              "question after one flip.",
+            teacherTip:
+              "Write the flipped A.P. clearly and note its a and d before doing anything else.",
+            commonMistake:
+              "Forgetting the final flip. The A.P. answer must be reciprocated to return to the H.P.",
+            examples: [
+              {
+                question: "Find the 4th term of the H.P. \\(\\tfrac13, \\tfrac15, \\tfrac17, \\ldots\\)",
+                steps: [
+                  "Flip to the A.P. \\(3, 5, 7, \\ldots\\) with \\(a = 3,\\; d = 2\\).",
+                  "The 4th A.P. term is \\(a_4 = 3 + (4-1)(2) = 9\\).",
+                  "Flip back: the 4th H.P. term is \\(\\tfrac19\\)."
+                ]
+              }
+            ]
+          }
+        ]
+      },
+
+      {
+        id: "means",
+        num: "09",
+        title: "The Three Means (AM, GM, HM)",
+        subtitle: "Averages of every flavour — plus the very testable A ≥ G ≥ H rule.",
+        intro:
+          "Between two numbers a and c: the Arithmetic Mean is \\(A = \\dfrac{a+c}{2}\\), the Geometric Mean is " +
+          "\\(G = \\sqrt{ac}\\), and the Harmonic Mean is \\(H = \\dfrac{2ac}{a+c}\\). For positive numbers, " +
+          "\\(A \\geq G \\geq H\\).",
+        intuition:
+          "The single best real-life example: drive somewhere at 40 km/h and back at 60 km/h and your average " +
+          "speed is NOT 50 — it's the Harmonic Mean, 48 km/h, because you spend more TIME at the slower speed. " +
+          "The H.M. always pulls the average toward the smaller number.",
+        sections: [
+          {
+            num: "9.1",
+            title: "The Three Means and Their Order",
+            coreDefinition:
+              "\\(A = \\dfrac{a+c}{2}\\), \\(G = \\sqrt{ac}\\), \\(H = \\dfrac{2ac}{a+c}\\). Always \\(A \\geq G \\geq H\\) " +
+              "(equal only when \\(a = c\\)), and \\(G^2 = A \\times H\\).",
+            whyThisWorks:
+              "The H.M. comes from flipping a, c to an A.P.: \\(\\tfrac1b = \\tfrac12\\left(\\tfrac1a + \\tfrac1c\\right)\\), " +
+              "which rearranges to \\(b = \\dfrac{2ac}{a+c}\\).",
+            teacherTip:
+              "To insert n A.M.s between a and b, use \\(d = \\dfrac{b-a}{n+1}\\) — there are n+1 gaps between n+2 terms (fence-post rule).",
+            commonMistake:
+              "Averaging two speeds directly. For equal distances the correct average is the Harmonic Mean, not the ordinary mean.",
+            examples: [
+              {
+                question: "For \\(a = 4,\\; b = 16\\), verify \\(A \\geq G \\geq H\\).",
+                steps: [
+                  "\\(A = \\dfrac{4+16}{2} = 10\\).",
+                  "\\(G = \\sqrt{4 \\times 16} = \\sqrt{64} = 8\\).",
+                  "\\(H = \\dfrac{2(4)(16)}{20} = \\dfrac{128}{20} = 6.4\\).",
+                  "Check \\(10 \\geq 8 \\geq 6.4\\) ✓, and \\(G^2 = 64 = A \\times H = 10 \\times 6.4\\) ✓."
+                ]
+              }
+            ]
+          }
+        ]
+      },
+
+      {
+        id: "special-sums",
+        num: "10",
+        title: "Special Sums & Method of Differences",
+        subtitle: "Must-memorize sigma formulas plus a tool for tricky, non-standard series.",
+        intro:
+          "Some sums appear so often they are worth memorizing: \\(\\sum n = \\dfrac{n(n+1)}{2}\\), " +
+          "\\(\\sum n^2 = \\dfrac{n(n+1)(2n+1)}{6}\\), \\(\\sum n^3 = \\left[\\dfrac{n(n+1)}{2}\\right]^2\\).",
+        intuition:
+          "For a messy nth term, sort it like laundry: split into a 'cubes pile', 'squares pile', 'plain-n pile' and " +
+          "'constants pile', sum each pile with the formulas above, then add the pile totals. And a neat bonus: the " +
+          "sum of cubes always equals (the sum of the numbers) squared!",
+        sections: [
+          {
+            num: "10.1",
+            title: "Sigma Notation & Decomposition",
+            coreDefinition:
+              "\\(\\sum(an^3 + bn^2 + cn + d) = a\\sum n^3 + b\\sum n^2 + c\\sum n + d\\sum 1\\), with \\(\\sum 1 = n\\).",
+            whyThisWorks:
+              "Sigma is just shorthand for 'add these up', and addition can be regrouped, so a mixed sum splits into " +
+              "pieces that each have a known formula.",
+            teacherTip:
+              "Double-check with the cubes shortcut: \\(1^3 + 2^3 + 3^3 = 36 = (1+2+3)^2\\).",
+            commonMistake:
+              "Forgetting \\(\\sum 1 = n\\) (adding the number 1 a total of n times), not 1.",
+            examples: [
+              {
+                question: "Find \\(S_n\\) for the series with \\(t_n = 2n^2 + 3n\\).",
+                steps: [
+                  "Split: \\(S_n = 2\\sum n^2 + 3\\sum n\\).",
+                  "\\(= 2 \\cdot \\dfrac{n(n+1)(2n+1)}{6} + 3 \\cdot \\dfrac{n(n+1)}{2}\\).",
+                  "\\(= \\dfrac{n(n+1)(2n+1)}{3} + \\dfrac{3n(n+1)}{2}\\) — a fully correct answer."
+                ]
+              }
+            ]
+          },
+          {
+            num: "10.2",
+            title: "Method of Differences",
+            coreDefinition:
+              "Use when the GAPS between consecutive terms form an A.P. or G.P. Write \\(S_n\\) twice (once shifted), " +
+              "subtract, and most terms cancel — leaving a simple formula for \\(T_n\\).",
+            whyThisWorks:
+              "Subtracting the shifted sum isolates the differences, so if those differences follow a known pattern you " +
+              "can sum them with standard formulas.",
+            teacherTip:
+              "Step 1 is always the same: look at the gaps and check whether THEY form an A.P. or G.P.",
+            commonMistake:
+              "Applying the method when the differences have no pattern — it only helps when the gaps are themselves a progression.",
+            examples: [
+              {
+                question: "Find \\(T_n\\) for \\(1 + 5 + 12 + 22 + 35 + \\ldots\\)",
+                steps: [
+                  "Gaps are \\(4, 7, 10, 13, \\ldots\\) — an A.P. with \\(a = 4,\\; d = 3\\).",
+                  "\\(T_n = 1 + \\dfrac{(n-1)}{2}[2(4) + (n-2)(3)]\\).",
+                  "Simplifying gives \\(T_n = \\dfrac{3}{2}n^2 - \\dfrac{1}{2}n\\)."
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ],
+
+    revision: [
+      { topic: "A.P. nth term", result: "\\(a_n = a + (n-1)d\\)" },
+      { topic: "A.P. sum of n terms", result: "\\(S_n = \\dfrac{n}{2}[2a + (n-1)d] = \\dfrac{n}{2}(a + l)\\)" },
+      { topic: "A.P. term from end", result: "\\(l - (k-1)d\\)" },
+      { topic: "3 numbers in A.P.", result: "\\(2b = a + c\\)" },
+      { topic: "G.P. nth term", result: "\\(a_n = ar^{\\,n-1}\\)" },
+      { topic: "G.P. sum of n terms", result: "\\(S_n = \\dfrac{a(r^n - 1)}{r - 1}\\)" },
+      { topic: "G.P. sum to infinity", result: "\\(S_\\infty = \\dfrac{a}{1 - r},\\; |r| < 1\\)" },
+      { topic: "3 numbers in G.P.", result: "\\(b^2 = ac\\)" },
+      { topic: "H.P. nth term", result: "\\(a_n = \\dfrac{1}{a + (n-1)d}\\) (flip to A.P. first)" },
+      { topic: "Arithmetic Mean", result: "\\(A = \\dfrac{a + c}{2}\\)" },
+      { topic: "Geometric Mean", result: "\\(G = \\sqrt{ac}\\)" },
+      { topic: "Harmonic Mean", result: "\\(H = \\dfrac{2ac}{a + c}\\)" },
+      { topic: "Golden order", result: "\\(A \\geq G \\geq H\\) and \\(G^2 = A \\cdot H\\)" },
+      { topic: "Sum of first n integers", result: "\\(\\sum n = \\dfrac{n(n+1)}{2}\\)" },
+      { topic: "Sum of squares", result: "\\(\\sum n^2 = \\dfrac{n(n+1)(2n+1)}{6}\\)" },
+      { topic: "Sum of cubes", result: "\\(\\sum n^3 = \\left[\\dfrac{n(n+1)}{2}\\right]^2\\)" }
+    ],
+
+    quiz: [
+      {
+        question: "Find the 15th term of the A.P. \\(3, 7, 11, 15, \\ldots\\)",
+        answer: "\\(a = 3,\\; d = 4\\); \\(a_{15} = 3 + 14(4) = 59\\)."
+      },
+      {
+        question: "Find the sum of the first 20 terms of \\(5, 8, 11, \\ldots\\)",
+        answer: "\\(S_{20} = \\dfrac{20}{2}[2(5) + 19(3)] = 10[10 + 57] = 670\\)."
+      },
+      {
+        question: "If \\(T_6 = 9\\) and \\(T_9 = 6\\) in an A.P., find \\(T_{15}\\).",
+        answer: "Matches \\(T_p = q,\\; T_q = p\\) with \\(p = 6,\\; q = 9\\); so \\(T_{15} = 0\\)."
+      },
+      {
+        question: "Find the 7th term of the G.P. \\(5, 10, 20, \\ldots\\)",
+        answer: "\\(a = 5,\\; r = 2\\); \\(a_7 = 5 \\times 2^6 = 5 \\times 64 = 320\\)."
+      },
+      {
+        question: "Find \\(S_\\infty\\) for \\(1 + \\tfrac13 + \\tfrac19 + \\ldots\\)",
+        answer: "\\(a = 1,\\; r = \\tfrac13\\); \\(S_\\infty = \\dfrac{1}{1 - \\tfrac13} = \\dfrac32\\)."
+      },
+      {
+        question: "Find the 5th term of the H.P. \\(\\tfrac12, \\tfrac15, \\tfrac18, \\ldots\\)",
+        answer: "Flip to A.P. \\(2, 5, 8, \\ldots\\) with \\(d = 3\\); \\(a_5 = 2 + 4(3) = 14\\); flip back to \\(\\tfrac1{14}\\)."
+      },
+      {
+        question: "Find the G.M. of 9 and 25.",
+        answer: "\\(G = \\sqrt{9 \\times 25} = \\sqrt{225} = 15\\)."
+      },
+      {
+        question: "Find the H.M. of 4 and 12.",
+        answer: "\\(H = \\dfrac{2(4)(12)}{4 + 12} = \\dfrac{96}{16} = 6\\)."
+      },
+      {
+        question: "A car goes a distance at 30 km/h and returns at 90 km/h. Find its average speed.",
+        answer: "\\(H = \\dfrac{2(30)(90)}{30 + 90} = \\dfrac{5400}{120} = 45\\) km/h."
+      },
+      {
+        question: "Insert 3 A.M.s between 2 and 14.",
+        answer: "\\(d = \\dfrac{14 - 2}{3 + 1} = 3\\); the sequence is \\(2, 5, 8, 11, 14\\)."
+      }
+    ]
+  }
 };

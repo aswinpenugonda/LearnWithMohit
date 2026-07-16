@@ -127,6 +127,8 @@ body {
   border-radius: 12px;
   padding: 16px 20px;
   text-align: center;
+  text-decoration: none;
+  display: block;
   font-weight: 700;
   font-size: 0.82rem;
   letter-spacing: 0.5px;
@@ -526,6 +528,57 @@ body {
 .pg-legend .dot.vertex { background: #9aa4b8; }
 
 .formula-display { text-align: center; margin: 8px 0; }
+
+/* --------------------------------------------------- Progression Playground */
+.pg-eq sub { font-size: 0.62em; }
+.pg-face.gp { background: #10485a; }
+.pg-face.hp { background: #6b4a1f; }
+.pg-face.agp { background: #3a2c6b; }
+
+.prog-toggle { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 6px; }
+.prog-type-btn {
+  flex: 1 1 130px;
+  border: 1px solid var(--border-strong);
+  background: #fff;
+  color: var(--ink);
+  font-weight: 700;
+  font-size: 0.8rem;
+  padding: 10px 10px;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease, transform 0.15s ease;
+}
+.prog-type-btn:hover { background: #f2f5fa; transform: translateY(-1px); }
+.prog-type-btn.active { background: var(--navy); color: #fff; border-color: var(--navy); }
+
+.prog-seq-card {
+  margin-top: 14px;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: #fff;
+  padding: 14px 16px;
+  box-shadow: var(--shadow-sm);
+}
+.prog-seq-label { color: var(--muted); font-size: 0.7rem; font-weight: 700; letter-spacing: 1px; margin-bottom: 10px; }
+.prog-seq { display: flex; align-items: center; flex-wrap: wrap; gap: 6px; }
+.prog-term {
+  display: inline-grid; place-items: center;
+  min-width: 40px;
+  padding: 8px 10px;
+  border-radius: 10px;
+  background: #eef2fb;
+  border: 1px solid var(--border);
+  color: var(--ink);
+  font-weight: 700;
+  font-size: 0.9rem;
+  font-family: "Cascadia Code", "Consolas", monospace;
+}
+.prog-term.last { background: var(--orange-soft); border-color: var(--orange); color: #9a6410; }
+.prog-arrow { color: var(--muted); font-size: 0.78rem; font-weight: 700; }
+
+.pg-svg .prog-ylbl { fill: #8a94a6; font-size: 12px; text-anchor: end; }
+.pg-svg .prog-vlbl { fill: #2f3f63; font-size: 11px; font-weight: 700; text-anchor: middle; }
+.pg-svg .prog-ilbl { fill: #8a94a6; font-size: 11px; text-anchor: middle; }
 
 /* --------------------------------------------------------------- Footer */
 .portal-footer { border-top: 1px solid var(--border); background: #fff; margin-top: 20px; }

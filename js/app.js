@@ -20,6 +20,34 @@
   var app = document.getElementById("app");
   var data = window.LWM_DATA || { topics: [] };
 
+  // --- Chapter resolution --------------------------------------------------
+  // The portal now hosts more than one chapter. Chapter 01 (Quadratic) keeps
+  // its content at the top level of LWM_DATA; every other chapter provides a
+  // self-contained content object (welcome / tabs / topics / revision / quiz).
+
+  var CHAPTERS = data.chapters || [];
+  var CHAPTER_IDS = CHAPTERS.map(function (c) { return c.id; });
+  var currentChapterId = (CHAPTERS[0] || {}).id || "quadratic";
+
+  function chapterMeta(id) {
+    var found = null;
+    CHAPTERS.forEach(function (c) { if (c.id === id) found = c; });
+    return found || CHAPTERS[0] || { num: "01", label: "", playground: "parabola" };
+  }
+
+  function chapterContent(id) {
+    if (id && data[id] && data[id].topics) return data[id];
+    return {
+      welcome: data.welcome,
+      tabs: data.tabs,
+      topics: data.topics,
+      revision: data.revision,
+      quiz: data.quiz
+    };
+  }
+
+  function content() { return chapterContent(currentChapterId); }
+
   // --- Helpers -------------------------------------------------------------
 
   function esc(str) {
@@ -30,7 +58,7 @@
 
   function findTopic(id) {
     var found = null;
-    data.topics.forEach(function (t) { if (t.id === id) found = t; });
+    (content().topics || []).forEach(function (t) { if (t.id === id) found = t; });
     return found;
   }
 
@@ -202,17 +230,20 @@
   }
 
   function updateModuleLabel() {
-    var chapter = (data.chapters || [])[0] || { num: "01", label: "QUADRATIC EQUATIONS" };
+    var chapter = chapterMeta(currentChapterId);
     setText("module-value", chapter.num + " // " + chapter.label);
   }
 
   // --- Shared building blocks ---------------------------------------------
 
   function welcomeBanner() {
-    var w = data.welcome || {};
+    var w = content().welcome || {};
     var chapters = (data.chapters || []).map(function (c) {
-      var cls = "chapter-btn" + (c.active ? " active" : " locked");
-      return '<div class="' + cls + '">CHAPTER ' + esc(c.num) + " // " + esc(c.label) + "</div>";
+      var isActive = c.id === currentChapterId;
+      var cls = "chapter-btn" + (isActive ? " active" : "");
+      var first = (chapterContent(c.id).topics || [])[0];
+      var href = "#/" + c.id + "/notes/" + (first ? first.id : "");
+      return '<a class="' + cls + '" href="' + href + '">CHAPTER ' + esc(c.num) + " // " + esc(c.label) + "</a>";
     }).join("");
 
     return (
@@ -240,8 +271,10 @@
   }
 
   function tabBar(activeTab) {
-    var tabs = (data.tabs || []).map(function (t) {
-      var href = t.id === "notes" ? "#/notes/" + currentTopicId() : "#/" + t.id;
+    var tabs = (content().tabs || []).map(function (t) {
+      var href = t.id === "notes"
+        ? "#/" + currentChapterId + "/notes/" + currentTopicId()
+        : "#/" + currentChapterId + "/" + t.id;
       var cls = "tab" + (t.id === activeTab ? " active" : "");
       return (
         '<a class="' + cls + '" href="' + href + '">' +
@@ -253,10 +286,10 @@
   }
 
   function syllabusSidebar(activeId) {
-    var items = (data.topics || []).map(function (t) {
+    var items = (content().topics || []).map(function (t) {
       var cls = "syllabus-item" + (t.id === activeId ? " active" : "");
       return (
-        '<a class="' + cls + '" href="#/notes/' + esc(t.id) + '">' +
+        '<a class="' + cls + '" href="#/' + currentChapterId + "/notes/" + esc(t.id) + '">' +
           '<span class="s-num">' + esc(t.num) + "</span>" +
           '<span class="s-text">' +
             '<span class="s-title">' + esc(t.title) + "</span>" +
@@ -270,7 +303,7 @@
     return (
       '<aside class="syllabus">' +
         '<div class="syllabus-title"><span class="dot"></span> SYLLABUS INDEX 📚</div>' +
-        '<div class="syllabus-sub">Explore all ' + (data.topics || []).length + " core JEE foundation topics</div>" +
+        '<div class="syllabus-sub">Explore all ' + (content().topics || []).length + " core JEE foundation topics</div>" +
         '<div class="syllabus-list">' + items + "</div>" +
       "</aside>"
     );
@@ -315,7 +348,7 @@
   }
 
   function viewNotes(topicId) {
-    var t = findTopic(topicId) || (data.topics || [])[0];
+    var t = findTopic(topicId) || (content().topics || [])[0];
     if (!t) { app.innerHTML = welcomeBanner() + tabBar("notes") + '<p class="placeholder">No topics available.</p>'; return; }
 
     var header =
@@ -357,9 +390,12 @@
   }
 
   function viewRevision() {
-    var rows = (data.revision || []).map(function (r) {
+    var rows = (content().revision || []).map(function (r) {
       return "<tr><td>" + esc(r.topic) + "</td><td>" + r.result + "</td></tr>";
     }).join("");
+
+    var label = chapterMeta(currentChapterId).label || "";
+    var pretty = label.charAt(0) + label.slice(1).toLowerCase();
 
     app.innerHTML =
       welcomeBanner() +
@@ -368,7 +404,7 @@
         '<div class="topic-tags"><span class="topic-badge">QUICK REVISION</span>' +
         '<span class="topic-note-label"><span class="dot">●</span> ONE-PAGE MEMORY MAP</span></div>' +
         '<h2 class="topic-title">Quick Revision Sheet</h2>' +
-        '<p class="topic-intro">The must-remember results for Quadratic Equations. Review these before every test.</p>' +
+        '<p class="topic-intro">The must-remember results for ' + esc(pretty) + '. Review these before every test.</p>' +
         '<table class="data-table"><thead><tr><th>Topic</th><th>Must-remember result</th></tr></thead><tbody>' +
         rows + "</tbody></table>" +
       "</article>";
@@ -376,7 +412,7 @@
   }
 
   function viewQuiz() {
-    var items = (data.quiz || []).map(function (q, i) {
+    var items = (content().quiz || []).map(function (q, i) {
       return (
         '<div class="quiz-item">' +
           '<div class="quiz-q"><span class="qn">' + (i + 1) + "</span><span>" + q.question + "</span></div>" +
@@ -621,6 +657,344 @@
     );
   }
 
+  // --- Progression Playground (AP / GP / HP / AGP explorer) ----------------
+
+  var PROG = { type: "AP", a: 2, d: 3, r: 2, n: 8 };
+
+  var PROG_TYPES = {
+    AP:  { name: "Arithmetic (A.P.)", icon: "➕", face: "smile", badge: "➕ ARITHMETIC — ADD d" },
+    GP:  { name: "Geometric (G.P.)", icon: "✖️", face: "gp", badge: "✖️ GEOMETRIC — MULTIPLY BY r" },
+    HP:  { name: "Harmonic (H.P.)", icon: "🔄", face: "hp", badge: "🔄 HARMONIC — FLIP TO A.P." },
+    AGP: { name: "Arith-Geometric (A.G.P.)", icon: "🔗", face: "agp", badge: "🔗 A.G.P. — A.P. × G.P." }
+  };
+
+  function progTerms(type, a, d, r, n) {
+    var terms = [];
+    for (var i = 0; i < n; i++) {
+      if (type === "GP") terms.push(a * Math.pow(r, i));
+      else if (type === "HP") { var den = a + i * d; terms.push(den === 0 ? Infinity : 1 / den); }
+      else if (type === "AGP") terms.push((a + i * d) * Math.pow(r, i));
+      else terms.push(a + i * d);
+    }
+    return terms;
+  }
+
+  function progNiceNum(x) {
+    if (!isFinite(x)) return "∞";
+    var r = Math.round(x * 1000) / 1000;
+    return (Math.abs(r - Math.round(r)) < 1e-9) ? String(Math.round(r)) : String(r);
+  }
+
+  // Pretty reciprocal label for an H.P. term whose flipped-A.P. value is `den`.
+  function hpFrac(den) {
+    if (den === 0) return "∞";
+    if (den === 1) return "1";
+    if (den === -1) return "−1";
+    return (den < 0 ? "−1/" + Math.abs(den) : "1/" + den);
+  }
+
+  // A "nice" grid step (1, 2, 5 × 10^k) so both huge G.P.s and tiny H.P.s read well.
+  function niceStep(x) {
+    if (!(x > 0)) return 1;
+    var pow = Math.pow(10, Math.floor(Math.log(x) / Math.LN10));
+    var f = x / pow;
+    var nf = f < 1.5 ? 1 : (f < 3 ? 2 : (f < 7 ? 5 : 10));
+    return nf * pow;
+  }
+
+  function progPlotSVG(terms, labelFn) {
+    var W = 560, H = 430;
+    var padL = 46, padR = 20, padT = 24, padB = 40;
+    var plotW = W - padL - padR, plotH = H - padT - padB;
+    var n = terms.length;
+
+    var finite = terms.filter(function (v) { return isFinite(v); });
+    var lo = Math.min(0, finite.length ? Math.min.apply(null, finite) : 0);
+    var hi = Math.max(0, finite.length ? Math.max.apply(null, finite) : 1);
+    if (hi === lo) hi = lo + 1;
+    var padY = (hi - lo) * 0.12 || 1;
+    var ymin = lo - padY, ymax = hi + padY;
+
+    function sy(y) { return padT + (ymax - y) / (ymax - ymin) * plotH; }
+    var slot = plotW / n;
+    var barW = Math.max(6, Math.min(46, slot * 0.6));
+    function cx(i) { return padL + slot * (i + 0.5); }
+
+    var id = "prog" + (++_graphSeq);
+    var p = [];
+    p.push('<defs><clipPath id="clip-' + id + '"><rect x="' + padL + '" y="' + padT + '" width="' + plotW + '" height="' + plotH + '"/></clipPath></defs>');
+
+    // Horizontal grid + y labels.
+    var ystep = niceStep((ymax - ymin) / 6);
+    var guard = 0;
+    for (var gy = Math.ceil(ymin / ystep) * ystep; gy <= ymax && guard < 40; gy += ystep, guard++) {
+      var py = round2(sy(gy));
+      p.push('<line x1="' + padL + '" y1="' + py + '" x2="' + (padL + plotW) + '" y2="' + py + '" stroke="#eef1f6"/>');
+      p.push('<text x="' + (padL - 8) + '" y="' + (py + 4) + '" class="prog-ylbl">' + progNiceNum(gy) + "</text>");
+    }
+
+    // Baseline (y = 0).
+    var y0 = round2(sy(0));
+    p.push('<line x1="' + padL + '" y1="' + y0 + '" x2="' + (padL + plotW) + '" y2="' + y0 + '" stroke="#9aa4b8" stroke-width="1.3"/>');
+
+    // Bars + labels for each term.
+    terms.forEach(function (v, i) {
+      var ly;
+      if (isFinite(v)) {
+        var x = round2(cx(i) - barW / 2);
+        var top = round2(sy(Math.max(0, v)));
+        var bot = round2(sy(Math.min(0, v)));
+        var hgt = Math.max(1, bot - top);
+        p.push('<rect x="' + x + '" y="' + top + '" width="' + round2(barW) + '" height="' + round2(hgt) + '" rx="3" fill="' + (v < 0 ? "#e0544e" : "#4f7cf0") + '" opacity="0.85"/>');
+        ly = v >= 0 ? top - 6 : bot + 14;
+      } else {
+        ly = padT + 12;
+      }
+      var lbl = labelFn ? labelFn(v, i) : progNiceNum(v);
+      p.push('<text x="' + round2(cx(i)) + '" y="' + ly + '" class="prog-vlbl">' + esc(lbl) + "</text>");
+      p.push('<text x="' + round2(cx(i)) + '" y="' + (padT + plotH + 16) + '" class="prog-ilbl">a' + (i + 1) + "</text>");
+    });
+
+    // Connecting line across finite tops (shows the growth shape).
+    var d = "", started = false;
+    terms.forEach(function (v, i) {
+      if (!isFinite(v)) { started = false; return; }
+      d += (started ? "L" : "M") + round2(cx(i)) + " " + round2(sy(v)) + " ";
+      started = true;
+    });
+    p.push('<path d="' + d + '" fill="none" stroke="#14233f" stroke-width="2.2" clip-path="url(#clip-' + id + ')"/>');
+    terms.forEach(function (v, i) {
+      if (isFinite(v)) p.push('<circle cx="' + round2(cx(i)) + '" cy="' + round2(sy(v)) + '" r="3.4" fill="#f5a623" stroke="#fff" stroke-width="1.2"/>');
+    });
+
+    return '<svg viewBox="0 0 ' + W + " " + H + '" class="pg-svg" role="img" aria-label="Progression bar chart">' + p.join("") + "</svg>";
+  }
+
+  function progEqHTML(type, a, d, r) {
+    var dsign = d < 0 ? "−" : "+";
+    var apPart = '<span class="eq-num">' + a + '</span> <span class="eq-op">' + dsign + '</span> ' +
+      '<span class="eq-num">(n−1)</span><span class="eq-op">·</span><span class="eq-num">' + Math.abs(d) + "</span>";
+    var gpPow = ' <span class="eq-op">·</span> <span class="eq-num">' + r + '</span><span class="eq-var"><sup>(n−1)</sup></span>';
+    if (type === "GP") return '<span class="eq-num">' + a + "</span>" + gpPow;
+    if (type === "HP") return '<span class="eq-op">1 ⁄ (</span>' + apPart + '<span class="eq-op">)</span>';
+    if (type === "AGP") return '<span class="eq-op">(</span>' + apPart + '<span class="eq-op">)</span>' + gpPow;
+    return apPart;
+  }
+
+  function progInsight(type, a, d, r, n, terms, sum) {
+    var last = terms[terms.length - 1];
+    if (type === "AP") {
+      var dir = d > 0 ? "climbs up" : (d < 0 ? "steps down" : "stays flat");
+      return "This staircase " + dir + " by a fixed " + Math.abs(d) + " each step. The nth term is " +
+        "a + (n−1)d = " + progNiceNum(last) + ", and the sum uses (average of first & last) × count = " +
+        progNiceNum(sum) + ".";
+    }
+    if (type === "GP") {
+      var inf = "";
+      if (Math.abs(r) > 1) inf = " Since |r| > 1 the terms explode — the 'chessboard rice' kind of growth!";
+      return "Each term is " + r + "× the one before it. The nth term is a·r^(n−1) = " + progNiceNum(last) +
+        ", and the sum of these " + n + " terms is " + progNiceNum(sum) + "." + inf;
+    }
+    if (type === "HP") {
+      var flip = [];
+      for (var i = 0; i < Math.min(n, 4); i++) flip.push(progNiceNum(a + i * d));
+      return "Flip every term upside-down and you get the A.P. " + flip.join(", ") + ", … (common difference d = " + d +
+        "). Solve it as an A.P., then flip back: the nth term is 1 ⁄ (a + (n−1)d) = " + hpFrac(a + (n - 1) * d) + ".";
+    }
+    return "This hybrid multiplies the A.P. part (a, a+d, …) by the G.P. part (1, r, r²…) term by term. " +
+      "The nth term is (a + (n−1)d)·r^(n−1) = " + progNiceNum(last) + ", and these " + n +
+      " terms add to " + progNiceNum(sum) + ".";
+  }
+
+  function progUpdate() {
+    var type = PROG.type;
+    var a = parseInt(document.getElementById("prog-a").value, 10);
+    var n = parseInt(document.getElementById("prog-n").value, 10);
+    var dEl = document.getElementById("prog-d");
+    var rEl = document.getElementById("prog-r");
+    var d = dEl ? parseInt(dEl.value, 10) : PROG.d;
+    var r = rEl ? parseInt(rEl.value, 10) : PROG.r;
+    if (rEl && r === 0) { r = 2; rEl.value = "2"; } // r = 0 collapses a G.P.
+    PROG = { type: type, a: a, d: d, r: r, n: n };
+
+    document.getElementById("prog-a-val").textContent = (a > 0 ? "+" : "") + a;
+    if (dEl) document.getElementById("prog-d-val").textContent = (d > 0 ? "+" : "") + d;
+    if (rEl) document.getElementById("prog-r-val").textContent = (r > 0 ? "+" : "") + r;
+    document.getElementById("prog-n-val").textContent = n + " terms";
+
+    document.getElementById("prog-eq").innerHTML = progEqHTML(type, a, d, r);
+
+    var chips = ["a = " + a];
+    if (type === "AP" || type === "HP" || type === "AGP") chips.push("d = " + d);
+    if (type === "GP" || type === "AGP") chips.push("r = " + r);
+    chips.push("n = " + n);
+    document.getElementById("prog-chips").innerHTML = chips.map(function (c) {
+      return '<span class="pg-chip">' + esc(c) + "</span>";
+    }).join("");
+
+    var terms = progTerms(type, a, d, r, n);
+    var sum = 0;
+    terms.forEach(function (v) { if (isFinite(v)) sum += v; });
+    var last = terms[terms.length - 1];
+    var labelFn = type === "HP" ? function (v, i) { return hpFrac(a + i * d); } : null;
+
+    // Sequence chips (with the operator that links consecutive terms).
+    var arrow = type === "AP" ? (d < 0 ? "−" + Math.abs(d) : "+" + d)
+      : type === "GP" ? "×" + r : "→";
+    document.getElementById("prog-seq").innerHTML = terms.map(function (v, i) {
+      var lbl = labelFn ? labelFn(v, i) : progNiceNum(v);
+      return '<span class="prog-term' + (i === terms.length - 1 ? " last" : "") + '">' + esc(lbl) + "</span>";
+    }).join('<span class="prog-arrow">' + esc(arrow) + "</span>");
+
+    document.getElementById("prog-graph").innerHTML = progPlotSVG(terms, labelFn);
+
+    document.getElementById("prog-last").textContent = labelFn ? labelFn(last, n - 1) : progNiceNum(last);
+    document.getElementById("prog-sum").textContent = progNiceNum(sum);
+
+    var meta = PROG_TYPES[type];
+    var badge = document.getElementById("prog-badge");
+    badge.textContent = meta.badge;
+    badge.className = "pg-face " + meta.face;
+
+    document.getElementById("prog-insight").innerHTML =
+      "<strong>Teacher's Insight:</strong> " + esc(progInsight(type, a, d, r, n, terms, sum));
+  }
+
+  function progFirstTermCfg(type) {
+    if (type === "HP") return { label: "FIRST TERM (flipped A.P.)", min: -10, max: 10,
+      help: "For an H.P. this is the first term of the flipped A.P.; the first H.P. term is its reciprocal." };
+    return { label: "FIRST TERM", min: -10, max: 10, help: "The starting value of your sequence — where it begins." };
+  }
+
+  function progStepSliders(type) {
+    var out = [];
+    if (type === "AP" || type === "HP" || type === "AGP") {
+      out.push({
+        id: "prog-d",
+        label: type === "HP" ? "FLIPPED A.P. STEP" : "COMMON DIFFERENCE",
+        letter: "d",
+        min: type === "HP" ? -6 : -10,
+        max: type === "HP" ? 6 : 10,
+        value: PROG.d,
+        help: type === "HP"
+          ? "The reciprocals form an A.P.; d is that A.P.'s common difference."
+          : "Each term adds a fixed d (the A.P. part). Positive climbs, negative steps down."
+      });
+    }
+    if (type === "GP" || type === "AGP") {
+      out.push({
+        id: "prog-r", label: "COMMON RATIO", letter: "r", min: -4, max: 4, value: PROG.r,
+        help: "Each term is multiplied by r (the G.P. part). |r| > 1 explodes; |r| < 1 shrinks."
+      });
+    }
+    return out;
+  }
+
+  function viewProgressionPlayground() {
+    var aCfg = progFirstTermCfg(PROG.type);
+    var stepSliders = progStepSliders(PROG.type).map(function (s) {
+      return pgSliderCustom(s.id, s.label, s.letter, s.min, s.max, s.value, s.help);
+    }).join("");
+
+    var toggle = Object.keys(PROG_TYPES).map(function (k) {
+      var m = PROG_TYPES[k];
+      return '<button class="prog-type-btn" data-type="' + k + '">' + m.icon + " " + esc(m.name) + "</button>";
+    }).join("");
+
+    app.innerHTML =
+      welcomeBanner() +
+      tabBar("playground") +
+      '<article class="panel playground">' +
+        '<div class="pg-head">' +
+          "<div>" +
+            '<span class="topic-badge">INTERACTIVE PROGRESSION PLAYGROUND 📊</span>' +
+            '<h2 class="topic-title">Progression Playground</h2>' +
+            '<p class="topic-intro">Mohit, switch between an Arithmetic (adding), Geometric (multiplying), ' +
+              "Harmonic (flip-to-A.P.) or Arithmetic-Geometric (A.P. × G.P.) progression, then move the sliders " +
+              "to build your own sequence. Watch the terms, the nth-term formula and the running sum update live!</p>" +
+          "</div>" +
+          '<button class="reset-btn" id="prog-reset">🔄 RESET</button>' +
+        "</div>" +
+
+        '<div class="pg-grid">' +
+          '<div class="pg-controls">' +
+            '<div class="prog-toggle" role="tablist">' + toggle + "</div>" +
+
+            '<div class="pg-eq-card">' +
+              '<div class="pg-eq-label">YOUR LIVE nth-TERM MACHINE:</div>' +
+              '<div class="pg-eq"><span class="eq-op">a<sub>n</sub> =</span> <span id="prog-eq"></span></div>' +
+              '<div class="pg-chips" id="prog-chips"></div>' +
+            "</div>" +
+
+            pgSliderCustom("prog-a", aCfg.label, "a", aCfg.min, aCfg.max, PROG.a, aCfg.help) +
+            stepSliders +
+            pgSliderCustom("prog-n", "NUMBER OF TERMS", "n", 2, 12, PROG.n, "How many terms to generate and add up.") +
+
+            '<div class="pg-report">' +
+              '<div class="pg-report-title">✨ SEQUENCE REPORT:</div>' +
+              '<div class="pg-report-grid">' +
+                '<div class="pg-stat"><div class="pg-stat-label">nth (LAST) TERM</div><div class="pg-stat-val" id="prog-last"></div></div>' +
+                '<div class="pg-stat"><div class="pg-stat-label">SUM OF n TERMS</div><div class="pg-stat-val" id="prog-sum"></div></div>' +
+              "</div>" +
+              '<div class="pg-insight" id="prog-insight"></div>' +
+            "</div>" +
+          "</div>" +
+
+          '<div class="pg-graph-col">' +
+            '<div class="pg-graph-card">' +
+              '<div class="pg-face smile" id="prog-badge"></div>' +
+              '<div id="prog-graph"></div>' +
+            "</div>" +
+            '<div class="prog-seq-card">' +
+              '<div class="prog-seq-label">GENERATED SEQUENCE:</div>' +
+              '<div class="prog-seq" id="prog-seq"></div>' +
+            "</div>" +
+            '<div class="pg-legend">' +
+              '<span><i class="dot curve"></i> Term value (bar)</span>' +
+              '<span><i class="dot root"></i> Growth path</span>' +
+            "</div>" +
+          "</div>" +
+        "</div>" +
+      "</article>";
+
+    // Wire up the four-way type toggle (re-renders with the right sliders).
+    Array.prototype.forEach.call(app.querySelectorAll(".prog-type-btn"), function (btn) {
+      if (btn.getAttribute("data-type") === PROG.type) btn.classList.add("active");
+      btn.addEventListener("click", function () {
+        var next = btn.getAttribute("data-type");
+        if (next === PROG.type) return;
+        PROG.type = next;
+        viewProgressionPlayground();
+      });
+    });
+
+    // Every range slider inside the controls column drives a live update.
+    Array.prototype.forEach.call(app.querySelectorAll('.pg-controls input[type="range"]'), function (el) {
+      el.addEventListener("input", progUpdate);
+    });
+    document.getElementById("prog-reset").addEventListener("click", function () {
+      PROG = { type: PROG.type, a: 2, d: 3, r: 2, n: 8 };
+      viewProgressionPlayground();
+    });
+
+    progUpdate();
+    renderMath();
+  }
+
+  // Slider variant whose id is passed verbatim (no "pg-" prefix added).
+  function pgSliderCustom(id, label, letter, min, max, value, help) {
+    return (
+      '<div class="pg-slider">' +
+        '<div class="pg-slider-head">' +
+          '<span class="pg-slider-label"><span class="dot"></span> ' + label + ' ( <b>' + letter + "</b> )</span>" +
+          '<span class="pg-slider-val" id="' + id + '-val"></span>' +
+        "</div>" +
+        '<input type="range" id="' + id + '" min="' + min + '" max="' + max + '" step="1" value="' + value + '">' +
+        '<div class="pg-slider-help">' + esc(help) + "</div>" +
+      "</div>"
+    );
+  }
+
   function viewPlaceholder(tab, icon, title, text) {
     app.innerHTML =
       welcomeBanner() +
@@ -639,14 +1013,25 @@
   var isInitialLoad = true;
 
   function currentTopicId() {
-    if (_lastTopic) return _lastTopic;
-    var first = (data.topics || [])[0];
-    return first ? first.id : "";
+    var topics = content().topics || [];
+    if (_lastTopic && topics.some(function (t) { return t.id === _lastTopic; })) return _lastTopic;
+    return topics[0] ? topics[0].id : "";
+  }
+
+  function playgroundView() {
+    var kind = chapterMeta(currentChapterId).playground;
+    if (kind === "progression") return viewProgressionPlayground();
+    return viewPlayground();
   }
 
   function router() {
     var hash = window.location.hash.replace(/^#/, "") || "/";
     var parts = hash.split("/").filter(Boolean);
+
+    // Optional leading chapter id, e.g. #/progressions/notes/ap-basics.
+    if (parts.length && CHAPTER_IDS.indexOf(parts[0]) !== -1) {
+      currentChapterId = parts.shift();
+    }
 
     var view = parts[0];
 
@@ -654,6 +1039,8 @@
     // selections inside Student Notes scroll to the content (handled in
     // viewNotes) so the syllabus index stays in view.
     if (view !== "notes") window.scrollTo(0, 0);
+
+    updateModuleLabel();
 
     if (view === "notes" && parts[1]) {
       _lastTopic = parts[1];
@@ -665,11 +1052,11 @@
     } else if (view === "quiz") {
       viewQuiz();
     } else if (view === "playground") {
-      viewPlayground();
+      playgroundView();
     } else if (view === "chat") {
       viewPlaceholder(
         "chat", "💬", "AI Teacher Chat",
-        "Your AI teacher chat will live here. Meanwhile, use the Student Notes and Practice Quiz Arena to master every quadratic concept."
+        "Your AI teacher chat will live here. Meanwhile, use the Student Notes and Practice Quiz Arena to master every concept."
       );
     } else {
       viewNotes(currentTopicId());
